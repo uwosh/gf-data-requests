@@ -30,7 +30,7 @@ class GFDataRequestsAddOn extends GFAddOn {
 	 */
 	public function init() {
 		parent::init();
-		add_filter( 'gform_submit_button', array( $this, 'form_submit_button' ), 10, 2 );
+		// add_filter( 'gform_submit_button', array( $this, 'form_submit_button' ), 10, 2 );
 		add_action( 'gform_after_submission', array( $this, 'after_submission' ), 10, 2 );
     }
     
@@ -91,7 +91,7 @@ class GFDataRequestsAddOn extends GFAddOn {
 	function form_submit_button( $button, $form ) {
 		$settings = $this->get_form_settings( $form );
 		if ( isset( $settings['enabled'] ) && true == $settings['enabled'] ) {
-			$text   = $this->get_plugin_setting( 'mytextbox' );
+			$text   = $this->get_plugin_setting( 'username' );
 			$button = "<div>{$text}</div>" . $button;
 		}
 		return $button;
@@ -117,13 +117,27 @@ class GFDataRequestsAddOn extends GFAddOn {
 				'title'  => esc_html__( 'Data Requests Add-On Settings', 'datarequestsaddon' ),
 				'fields' => array(
 					array(
-						'name'              => 'mytextbox',
-						'tooltip'           => esc_html__( 'This is the tooltip', 'datarequestsaddon' ),
-						'label'             => esc_html__( 'This is the label', 'datarequestsaddon' ),
+						'name'              => 'username',
+						'tooltip'           => esc_html__( 'This is the account that the data should pass thru to Jira creating an issue.', 'datarequestsaddon' ),
+						'label'             => esc_html__( 'Jira Username', 'datarequestsaddon' ),
 						'type'              => 'text',
 						'class'             => 'small',
-						'feedback_callback' => array( $this, 'is_valid_setting' ),
-					)
+                    ),
+                    array(
+						'name'              => 'apikey',
+						'tooltip'           => esc_html__( 'This is the API key that is associated with the Jira username.', 'datarequestsaddon' ),
+						'label'             => esc_html__( 'Jira API Key', 'datarequestsaddon' ),
+						'type'              => 'text',
+						'class'             => 'medium',
+                    ),
+                    array(
+						'name'              => 'projectkey',
+						'tooltip'           => esc_html__( 'This is the project key that is associated with the Data Requests Jira project.', 'datarequestsaddon' ),
+						'label'             => esc_html__( 'Project Key', 'datarequestsaddon' ),
+						'type'              => 'text',
+						'class'             => 'small',
+						'feedback_callback' => array( $this, 'is_valid_project_key' ),
+                    ),
 				)
 			)
 		);
@@ -151,79 +165,28 @@ class GFDataRequestsAddOn extends GFAddOn {
 							),
 						),
                     ),
+                    array(
+						'label'             => esc_html__( 'Issue Summary', 'datarequestsaddon' ),
+						'type'              => 'text',
+						'name'              => 'issuesummary',
+						'merge_tags'     	=> true,
+						'tooltip'           => esc_html__( 'This is where you can create what the issue summary looks like.', 'datarequestsaddon' ),
+						'class'             => 'medium merge-tag-support mt-position-right',
+					),
+                    array(
+						'label'   		=> esc_html__( 'Issue Description', 'datarequestsaddon' ),
+						'type'    		=> 'textarea',
+						'name'    		=> 'issuedescription',
+						'merge_tags'    => true,
+						'tooltip' 		=> esc_html__( 'This is where you can create what the issue description looks like.', 'datarequestsaddon' ),
+						'class'   		=> 'medium merge-tag-support mt-position-right',
+					),
 				),
 			),
 		);
 	}
     
     // # SIMPLE CONDITION EXAMPLE --------------------------------------------------------------------------------------
-    
-    /**
-	 * Define the markup for the custom_logic_type type field.
-	 *
-	 * @param array $field The field properties.
-	 * @param bool|true $echo Should the setting markup be echoed.
-	 */
-	public function settings_custom_logic_type( $field, $echo = true ) {
-		// Get the setting name.
-		$name = $field['name'];
-		// Define the properties for the checkbox to be used to enable/disable access to the simple condition settings.
-		$checkbox_field = array(
-			'name'    => $name,
-			'type'    => 'checkbox',
-			'choices' => array(
-				array(
-					'label' => esc_html__( 'Enabled', 'datarequestsaddon' ),
-					'name'  => $name . '_enabled',
-				),
-			),
-			'onclick' => "if(this.checked){jQuery('#{$name}_condition_container').show();} else{jQuery('#{$name}_condition_container').hide();}",
-		);
-		// Determine if the checkbox is checked, if not the simple condition settings should be hidden.
-		$is_enabled      = $this->get_setting( $name . '_enabled' ) == '1';
-		$container_style = ! $is_enabled ? "style='display:none;'" : '';
-		// Put together the field markup.
-		$str = sprintf( "%s<div id='%s_condition_container' %s>%s</div>",
-			$this->settings_checkbox( $checkbox_field, false ),
-			$name,
-			$container_style,
-			$this->simple_condition( $name )
-		);
-		echo $str;
-	}
-    
-    /**
-	 * Build an array of choices containing fields which are compatible with conditional logic.
-	 *
-	 * @return array
-	 */
-	public function get_conditional_logic_fields() {
-		$form   = $this->get_current_form();
-		$fields = array();
-		foreach ( $form['fields'] as $field ) {
-			if ( $field->is_conditional_logic_supported() ) {
-				$inputs = $field->get_entry_inputs();
-				if ( $inputs ) {
-					$choices = array();
-					foreach ( $inputs as $input ) {
-						if ( rgar( $input, 'isHidden' ) ) {
-							continue;
-						}
-						$choices[] = array(
-							'value' => $input['id'],
-							'label' => GFCommon::get_label( $field, $input['id'], true )
-						);
-					}
-					if ( ! empty( $choices ) ) {
-						$fields[] = array( 'choices' => $choices, 'label' => GFCommon::get_label( $field ) );
-					}
-				} else {
-					$fields[] = array( 'value' => $field->id, 'label' => GFCommon::get_label( $field ) );
-				}
-			}
-		}
-		return $fields;
-	}
     
     /**
 	 * Evaluate the conditional logic.
@@ -267,23 +230,39 @@ class GFDataRequestsAddOn extends GFAddOn {
 	 * @param array $form The form currently being processed.
 	 */
 	public function after_submission( $entry, $form ) {
-		// Evaluate the rules configured for the custom_logic setting.
-		$result = $this->is_custom_logic_met( $form, $entry );
-		if ( $result ) {
-			// Do something awesome because the rules were met.
-		}
+        $settings = $this->get_form_settings( $form );
+        if ( isset( $settings['enabled'] ) && true == $settings['enabled'] ) { // If enabled on form, proceed
+			// Getting the Jira settings
+            $username   = $this->get_plugin_setting( 'username' );
+            $apikey   = $this->get_plugin_setting( 'apikey' );
+            $projectkey   = $this->get_plugin_setting( 'projectkey' );
+
+			// Getting the issue summary and description
+			$issue_summary = $form["datarequestsaddon"]["issuesummary"];
+			$issue_description = $form["datarequestsaddon"]["issuedescription"];
+
+			// Parsing the merge tags
+			$issue_summary = GFCommon::replace_variables( $issue_summary, $form, $entry, false, true, false, 'text' );
+			$issue_description = GFCommon::replace_variables( $issue_description, $form, $entry, false, true, false, 'text' );
+
+			// TODO making the CURL to Jira
+        }
 	}
     
     // # HELPERS -------------------------------------------------------------------------------------------------------
     
     /**
-	 * The feedback callback for the 'mytextbox' setting on the plugin settings page and the 'mytext' setting on the form settings page.
+	 * The feedback callback for the 'project key' setting on the plugin settings page on the form settings page.
 	 *
 	 * @param string $value The setting value.
 	 *
 	 * @return bool
 	 */
-	public function is_valid_setting( $value ) {
-		return strlen( $value ) < 10;
+	public function is_valid_project_key( $value ) {
+		return strlen( $value ) < 4;
+	}
+
+	public function parse_merge_tags( $merge_tags, $string ){
+
 	}
 }
