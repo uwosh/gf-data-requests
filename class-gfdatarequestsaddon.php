@@ -48,11 +48,6 @@ class GFDataRequestsAddOn extends GFAddOn {
 				'src'     => $this->get_base_url() . '/js/script.js',
 				'version' => $this->_version,
 				'deps'    => array( 'jquery' ),
-				'strings' => array(
-					'first'  => esc_html__( 'First Choice', 'datarequestsaddon' ),
-					'second' => esc_html__( 'Second Choice', 'datarequestsaddon' ),
-					'third'  => esc_html__( 'Third Choice', 'datarequestsaddon' )
-				),
 				'enqueue' => array(
 					array(
 						'admin_page' => array( 'form_settings' ),
@@ -119,7 +114,7 @@ class GFDataRequestsAddOn extends GFAddOn {
 	public function plugin_settings_fields() {
 		return array(
 			array(
-				'title'  => esc_html__( 'Simple Add-On Settings', 'datarequestsaddon' ),
+				'title'  => esc_html__( 'Data Requests Add-On Settings', 'datarequestsaddon' ),
 				'fields' => array(
 					array(
 						'name'              => 'mytextbox',
@@ -135,174 +130,30 @@ class GFDataRequestsAddOn extends GFAddOn {
     }
     
     /**
-	 * Configures the settings which should be rendered on the Form Settings > Simple Add-On tab.
+	 * Configures the settings which should be rendered on the Form Settings > Data Requests Add-On tab.
 	 *
 	 * @return array
 	 */
 	public function form_settings_fields( $form ) {
 		return array(
 			array(
-				'title'  => esc_html__( 'Simple Form Settings', 'datarequestsaddon' ),
+				'title'  => esc_html__( 'Data Requests Form Settings', 'datarequestsaddon' ),
 				'fields' => array(
 					array(
-						'label'   => esc_html__( 'My checkbox', 'datarequestsaddon' ),
+						'label'   => esc_html__( 'Write data requests to Jira', 'datarequestsaddon' ),
 						'type'    => 'checkbox',
 						'name'    => 'enabled',
-						'tooltip' => esc_html__( 'This is the tooltip', 'datarequestsaddon' ),
+						'tooltip' => esc_html__( 'If this is checked, all form submissions will create a new issue in the Data Requests Jira Project.', 'datarequestsaddon' ),
 						'choices' => array(
 							array(
 								'label' => esc_html__( 'Enabled', 'datarequestsaddon' ),
 								'name'  => 'enabled',
 							),
 						),
-					),
-					array(
-						'label'   => esc_html__( 'My checkboxes', 'datarequestsaddon' ),
-						'type'    => 'checkbox',
-						'name'    => 'checkboxgroup',
-						'tooltip' => esc_html__( 'This is the tooltip', 'datarequestsaddon' ),
-						'choices' => array(
-							array(
-								'label' => esc_html__( 'First Choice', 'datarequestsaddon' ),
-								'name'  => 'first',
-							),
-							array(
-								'label' => esc_html__( 'Second Choice', 'datarequestsaddon' ),
-								'name'  => 'second',
-							),
-							array(
-								'label' => esc_html__( 'Third Choice', 'datarequestsaddon' ),
-								'name'  => 'third',
-							),
-						),
-					),
-					array(
-						'label'   => esc_html__( 'My Radio Buttons', 'datarequestsaddon' ),
-						'type'    => 'radio',
-						'name'    => 'myradiogroup',
-						'tooltip' => esc_html__( 'This is the tooltip', 'datarequestsaddon' ),
-						'choices' => array(
-							array(
-								'label' => esc_html__( 'First Choice', 'datarequestsaddon' ),
-							),
-							array(
-								'label' => esc_html__( 'Second Choice', 'datarequestsaddon' ),
-							),
-							array(
-								'label' => esc_html__( 'Third Choice', 'datarequestsaddon' ),
-							),
-						),
-					),
-					array(
-						'label'      => esc_html__( 'My Horizontal Radio Buttons', 'datarequestsaddon' ),
-						'type'       => 'radio',
-						'horizontal' => true,
-						'name'       => 'myradiogrouph',
-						'tooltip'    => esc_html__( 'This is the tooltip', 'datarequestsaddon' ),
-						'choices'    => array(
-							array(
-								'label' => esc_html__( 'First Choice', 'datarequestsaddon' ),
-							),
-							array(
-								'label' => esc_html__( 'Second Choice', 'datarequestsaddon' ),
-							),
-							array(
-								'label' => esc_html__( 'Third Choice', 'datarequestsaddon' ),
-							),
-						),
-					),
-					array(
-						'label'   => esc_html__( 'My Dropdown', 'datarequestsaddon' ),
-						'type'    => 'select',
-						'name'    => 'mydropdown',
-						'tooltip' => esc_html__( 'This is the tooltip', 'datarequestsaddon' ),
-						'choices' => array(
-							array(
-								'label' => esc_html__( 'First Choice', 'datarequestsaddon' ),
-								'value' => 'first',
-							),
-							array(
-								'label' => esc_html__( 'Second Choice', 'datarequestsaddon' ),
-								'value' => 'second',
-							),
-							array(
-								'label' => esc_html__( 'Third Choice', 'datarequestsaddon' ),
-								'value' => 'third',
-							),
-						),
-					),
-					array(
-						'label'             => esc_html__( 'My Text Box', 'datarequestsaddon' ),
-						'type'              => 'text',
-						'name'              => 'mytext',
-						'tooltip'           => esc_html__( 'This is the tooltip', 'datarequestsaddon' ),
-						'class'             => 'medium',
-						'feedback_callback' => array( $this, 'is_valid_setting' ),
-					),
-					array(
-						'label'   => esc_html__( 'My Text Area', 'datarequestsaddon' ),
-						'type'    => 'textarea',
-						'name'    => 'mytextarea',
-						'tooltip' => esc_html__( 'This is the tooltip', 'datarequestsaddon' ),
-						'class'   => 'medium merge-tag-support mt-position-right',
-					),
-					array(
-						'label' => esc_html__( 'My Hidden Field', 'datarequestsaddon' ),
-						'type'  => 'hidden',
-						'name'  => 'myhidden',
-					),
-					array(
-						'label' => esc_html__( 'My Custom Field', 'datarequestsaddon' ),
-						'type'  => 'my_custom_field_type',
-						'name'  => 'my_custom_field',
-						'args'  => array(
-							'text'     => array(
-								'label'         => esc_html__( 'A textbox sub-field', 'datarequestsaddon' ),
-								'name'          => 'subtext',
-								'default_value' => 'change me',
-							),
-							'checkbox' => array(
-								'label'   => esc_html__( 'A checkbox sub-field', 'datarequestsaddon' ),
-								'name'    => 'my_custom_field_check',
-								'choices' => array(
-									array(
-										'label'         => esc_html__( 'Activate', 'datarequestsaddon' ),
-										'name'          => 'subcheck',
-										'default_value' => true,
-									),
-								),
-							),
-						),
-					),
-					array(
-						'label' => esc_html__( 'Simple condition', 'datarequestsaddon' ),
-						'type'  => 'custom_logic_type',
-						'name'  => 'custom_logic',
-					),
-					array(
-						'label' => esc_html__( 'Field Select', 'datarequestsaddon' ),
-						'type'  => 'field_select',
-						'name'  => 'my_field',
-					),
+                    ),
 				),
 			),
 		);
-	}
-    
-    /**
-	 * Define the markup for the my_custom_field_type type field.
-	 *
-	 * @param array $field The field properties.
-	 * @param bool|true $echo Should the setting markup be echoed.
-	 */
-	public function settings_my_custom_field_type( $field, $echo = true ) {
-		echo '<div>' . esc_html__( 'My custom field contains a few settings:', 'datarequestsaddon' ) . '</div>';
-		// get the text field settings from the main field and then render the text field
-		$text_field = $field['args']['text'];
-		$this->settings_text( $text_field );
-		// get the checkbox field settings from the main field and then render the checkbox field
-		$checkbox_field = $field['args']['checkbox'];
-		$this->settings_checkbox( $checkbox_field );
 	}
     
     // # SIMPLE CONDITION EXAMPLE --------------------------------------------------------------------------------------
