@@ -34,50 +34,6 @@ class GFDataRequestsAddOn extends GFAddOn {
 		add_action( 'gform_after_submission', array( $this, 'after_submission' ), 10, 2 );
     }
     
-    // # SCRIPTS & STYLES -----------------------------------------------------------------------------------------------
-
-    /**
-	 * Return the scripts which should be enqueued.
-	 *
-	 * @return array
-	 */
-	public function scripts() {
-		$scripts = array(
-			array(
-				'handle'  => 'script_js',
-				'src'     => $this->get_base_url() . '/js/script.js',
-				'version' => $this->_version,
-				'deps'    => array( 'jquery' ),
-				'enqueue' => array(
-					array(
-						'admin_page' => array( 'form_settings' ),
-						'tab'        => 'datarequestsaddon'
-					)
-				)
-			),
-		);
-		return array_merge( parent::scripts(), $scripts );
-    }
-    
-    /**
-	 * Return the stylesheets which should be enqueued.
-	 *
-	 * @return array
-	 */
-	public function styles() {
-		$styles = array(
-			array(
-				'handle'  => 'styles_css',
-				'src'     => $this->get_base_url() . '/css/styles.css',
-				'version' => $this->_version,
-				'enqueue' => array(
-					array( 'field_types' => array( 'poll' ) )
-				)
-			)
-		);
-		return array_merge( parent::styles(), $styles );
-    }
-    
     // # FRONTEND FUNCTIONS --------------------------------------------------------------------------------------------
     
     /**
