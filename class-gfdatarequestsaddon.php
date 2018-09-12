@@ -137,6 +137,13 @@ class GFDataRequestsAddOn extends GFAddOn {
 						'type'              => 'text',
 						'class'             => 'small',
 						'feedback_callback' => array( $this, 'is_valid_project_key' ),
+					),
+					array(
+						'name'              => 'projectname',
+						'tooltip'           => esc_html__( 'This is the project name that is associated with the Data Requests Jira project.', 'datarequestsaddon' ),
+						'label'             => esc_html__( 'Project Name', 'datarequestsaddon' ),
+						'type'              => 'text',
+						'class'             => 'small',
                     ),
 				)
 			)
@@ -235,7 +242,8 @@ class GFDataRequestsAddOn extends GFAddOn {
 			// Getting the Jira settings
             $username   = $this->get_plugin_setting( 'username' );
             $apikey   = $this->get_plugin_setting( 'apikey' );
-            $projectkey   = $this->get_plugin_setting( 'projectkey' );
+			$projectkey   = $this->get_plugin_setting( 'projectkey' );
+			$projectname   = $this->get_plugin_setting( 'projectname' );
 
 			// Getting the issue summary and description
 			$issue_summary = $form["datarequestsaddon"]["issuesummary"];
@@ -244,9 +252,6 @@ class GFDataRequestsAddOn extends GFAddOn {
 			// Parsing the merge tags
 			$issue_summary = GFCommon::replace_variables( $issue_summary, $form, $entry, false, true, false, 'text' );
 			$issue_description = GFCommon::replace_variables( $issue_description, $form, $entry, false, true, false, 'text' );
-
-			// TODO making the CURL to Jira
-			// TODO make the issue type dynamic with the settings page
 
 			// Forming the data
 			$data = array(
@@ -257,7 +262,7 @@ class GFDataRequestsAddOn extends GFAddOn {
 					"summary" => $issue_summary,
 					"description" => $issue_description,
 					"issuetype" => array(
-						"name" => "Data Request"
+						"name" => $projectname
 					)
 				)
 			);
