@@ -181,8 +181,18 @@ class GFDataRequestsAddOn extends GFAddOn {
 			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($ch, CURLOPT_FAILONERROR, true);
 
-			$result = curl_exec($ch);
+			curl_exec($ch);
+
+			if (curl_error($ch)) {
+				$error_msg = curl_error($ch);
+			}
+			curl_close($ch);
+			
+			if (isset($error_msg)) {
+				echo "Error passing data to Jira: " . $error_msg;
+			}
         }
 	}
     
