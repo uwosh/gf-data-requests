@@ -246,6 +246,35 @@ class GFDataRequestsAddOn extends GFAddOn {
 			$issue_description = GFCommon::replace_variables( $issue_description, $form, $entry, false, true, false, 'text' );
 
 			// TODO making the CURL to Jira
+			// TODO make the issue type dynamic with the settings page
+
+			// Forming the data
+			$data = array(
+				"fields" => array(
+					"project" => array(
+						"key" => $projectkey
+					),
+					"summary" => $issue_summary,
+					"description" => $issue_description,
+					"issuetype" => array(
+						"name" => "Data Request"
+					)
+				)
+			);
+			$data = json_encode($data);
+
+			// Making the cURL request to Jira
+			$ch = curl_init("https://uwoshdev.atlassian.net/rest/api/2/issue/");
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+				"Content-Type: application/json",
+				"Content-Length: " . strlen($data)
+			));
+			curl_setopt($ch, CURLOPT_USERPWD, $username . ":" . $apikey);
+			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+			$result = curl_exec($ch);
         }
 	}
     
@@ -260,9 +289,5 @@ class GFDataRequestsAddOn extends GFAddOn {
 	 */
 	public function is_valid_project_key( $value ) {
 		return strlen( $value ) < 4;
-	}
-
-	public function parse_merge_tags( $merge_tags, $string ){
-
 	}
 }
