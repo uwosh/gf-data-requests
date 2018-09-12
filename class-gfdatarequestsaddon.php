@@ -100,13 +100,6 @@ class GFDataRequestsAddOn extends GFAddOn {
     // # ADMIN FUNCTIONS -----------------------------------------------------------------------------------------------
     
     /**
-	 * Creates a custom page for this add-on.
-	 */
-	public function plugin_page() {
-		echo 'This page appears in the Forms menu';
-    }
-    
-    /**
 	 * Configures the settings which should be rendered on the add-on settings tab.
 	 *
 	 * @return array
@@ -116,6 +109,14 @@ class GFDataRequestsAddOn extends GFAddOn {
 			array(
 				'title'  => esc_html__( 'Data Requests Add-On Settings', 'datarequestsaddon' ),
 				'fields' => array(
+					array(
+						'name'              => 'jirasite',
+						'tooltip'           => esc_html__( 'This is the Jira site endpoint for the issue creation.', 'datarequestsaddon' ),
+						'label'             => esc_html__( 'Jira Site', 'datarequestsaddon' ),
+						'type'              => 'text',
+						'class'             => 'medium',
+						'feedback_callback'	=> array( $this, 'is_valid_site_url' ),
+                    ),
 					array(
 						'name'              => 'username',
 						'tooltip'           => esc_html__( 'This is the account that the data should pass thru to Jira creating an issue.', 'datarequestsaddon' ),
@@ -196,42 +197,7 @@ class GFDataRequestsAddOn extends GFAddOn {
     // # SIMPLE CONDITION EXAMPLE --------------------------------------------------------------------------------------
     
     /**
-	 * Evaluate the conditional logic.
-	 *
-	 * @param array $form The form currently being processed.
-	 * @param array $entry The entry currently being processed.
-	 *
-	 * @return bool
-	 */
-	public function is_custom_logic_met( $form, $entry ) {
-		if ( $this->is_gravityforms_supported( '2.0.7.4' ) ) {
-			// Use the helper added in Gravity Forms 2.0.7.4.
-			return $this->is_simple_condition_met( 'custom_logic', $form, $entry );
-		}
-		// Older version of Gravity Forms, use our own method of validating the simple condition.
-		$settings = $this->get_form_settings( $form );
-		$name       = 'custom_logic';
-		$is_enabled = rgar( $settings, $name . '_enabled' );
-		if ( ! $is_enabled ) {
-			// The setting is not enabled so we handle it as if the rules are met.
-			return true;
-		}
-		// Build the logic array to be used by Gravity Forms when evaluating the rules.
-		$logic = array(
-			'logicType' => 'all',
-			'rules'     => array(
-				array(
-					'fieldId'  => rgar( $settings, $name . '_field_id' ),
-					'operator' => rgar( $settings, $name . '_operator' ),
-					'value'    => rgar( $settings, $name . '_value' ),
-				),
-			)
-		);
-		return GFCommon::evaluate_conditional_logic( $logic, $form, $entry );
-	}
-    
-    /**
-	 * Performing a custom action at the end of the form submission process.
+	 * Performing a call to Jira to publish the issue that was submitted in the form.
 	 *
 	 * @param array $entry The entry currently being processed.
 	 * @param array $form The form currently being processed.
@@ -240,6 +206,7 @@ class GFDataRequestsAddOn extends GFAddOn {
         $settings = $this->get_form_settings( $form );
         if ( isset( $settings['enabled'] ) && true == $settings['enabled'] ) { // If enabled on form, proceed
 			// Getting the Jira settings
+			$jirasite   = $this->get_plugin_setting( 'jirasite' );
             $username   = $this->get_plugin_setting( 'username' );
             $apikey   = $this->get_plugin_setting( 'apikey' );
 			$projectkey   = $this->get_plugin_setting( 'projectkey' );
@@ -269,7 +236,7 @@ class GFDataRequestsAddOn extends GFAddOn {
 			$data = json_encode($data);
 
 			// Making the cURL request to Jira
-			$ch = curl_init("https://uwoshdev.atlassian.net/rest/api/2/issue/");
+			$ch = curl_init($jirasite . "/rest/api/2/issue/");
 			curl_setopt($ch, CURLOPT_HTTPHEADER, array(
 				"Content-Type: application/json",
 				"Content-Length: " . strlen($data)
@@ -286,7 +253,7 @@ class GFDataRequestsAddOn extends GFAddOn {
     // # HELPERS -------------------------------------------------------------------------------------------------------
     
     /**
-	 * The feedback callback for the 'project key' setting on the plugin settings page on the form settings page.
+	 * The feedback callback for the 'project key' setting on the plugin settings page.
 	 *
 	 * @param string $value The setting value.
 	 *
@@ -294,5 +261,16 @@ class GFDataRequestsAddOn extends GFAddOn {
 	 */
 	public function is_valid_project_key( $value ) {
 		return strlen( $value ) < 4;
+	}
+
+	/**
+	 * The feedback callback for the 'site url' setting on the plugin settings page.
+	 *
+	 * @param string $value The setting value.
+	 *
+	 * @return bool
+	 */
+	public function is_valid_site_url( $value ) {
+		return filter_var($value, FILTER_VALIDATE_URL);
 	}
 }
