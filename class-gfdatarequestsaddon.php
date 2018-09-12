@@ -30,28 +30,8 @@ class GFDataRequestsAddOn extends GFAddOn {
 	 */
 	public function init() {
 		parent::init();
-		// add_filter( 'gform_submit_button', array( $this, 'form_submit_button' ), 10, 2 );
 		add_action( 'gform_after_submission', array( $this, 'after_submission' ), 10, 2 );
     }
-    
-    // # FRONTEND FUNCTIONS --------------------------------------------------------------------------------------------
-    
-    /**
-	 * Add the text in the plugin settings to the bottom of the form if enabled for this form.
-	 *
-	 * @param string $button The string containing the input tag to be filtered.
-	 * @param array $form The form currently being displayed.
-	 *
-	 * @return string
-	 */
-	function form_submit_button( $button, $form ) {
-		$settings = $this->get_form_settings( $form );
-		if ( isset( $settings['enabled'] ) && true == $settings['enabled'] ) {
-			$text   = $this->get_plugin_setting( 'username' );
-			$button = "<div>{$text}</div>" . $button;
-		}
-		return $button;
-	}
 
     // # ADMIN FUNCTIONS -----------------------------------------------------------------------------------------------
     
