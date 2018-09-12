@@ -117,6 +117,14 @@ class GFDataRequestsAddOn extends GFAddOn {
 						'tooltip'           => esc_html__( 'This is where you can create what the issue summary looks like.', 'datarequestsaddon' ),
 						'class'             => 'medium merge-tag-support mt-position-right',
 					),
+					array(
+						'label'             => esc_html__( 'Issue Date', 'datarequestsaddon' ),
+						'type'              => 'text',
+						'name'              => 'issuedate',
+						'merge_tags'     	=> true,
+						'tooltip'           => esc_html__( 'Pass the due date of the data request to Jira here.', 'datarequestsaddon' ),
+						'class'             => 'medium merge-tag-support mt-position-right',
+					),
                     array(
 						'label'   		=> esc_html__( 'Issue Description', 'datarequestsaddon' ),
 						'type'    		=> 'textarea',
@@ -150,25 +158,47 @@ class GFDataRequestsAddOn extends GFAddOn {
 
 			// Getting the issue summary and description
 			$issue_summary = $form["datarequestsaddon"]["issuesummary"];
+			$issue_due_date = $form["datarequestsaddon"]["issuedate"];
 			$issue_description = $form["datarequestsaddon"]["issuedescription"];
 
 			// Parsing the merge tags
 			$issue_summary = GFCommon::replace_variables( $issue_summary, $form, $entry, false, true, false, 'text' );
+			$issue_due_date = GFCommon::replace_variables( $issue_due_date, $form, $entry, false, true, false, 'text' );
 			$issue_description = GFCommon::replace_variables( $issue_description, $form, $entry, false, true, false, 'text' );
 
+			// Converting date to proper format
+			$issue_due_date = date("Y-m-d", strtotime($issue_due_date));
+
 			// Forming the data
-			$data = array(
-				"fields" => array(
-					"project" => array(
-						"key" => $projectkey
-					),
-					"summary" => $issue_summary,
-					"description" => $issue_description,
-					"issuetype" => array(
-						"name" => $projectname
+			if($issue_due_date === "1970-01-01") { // This submission doesn't have a due date
+				$data = array(
+					"fields" => array(
+						"project" => array(
+							"key" => $projectkey
+						),
+						"summary" => $issue_summary,
+						"description" => $issue_description,
+						"issuetype" => array(
+							"name" => $projectname
+						)
 					)
-				)
-			);
+				);
+			} else { // This submission has a due date
+				$data = array(
+					"fields" => array(
+						"project" => array(
+							"key" => $projectkey
+						),
+						"summary" => $issue_summary,
+						"duedate" => $issue_due_date,
+						"description" => $issue_description,
+						"issuetype" => array(
+							"name" => $projectname
+						)
+					)
+				);
+			}
+
 			$data = json_encode($data);
 
 			// Making the cURL request to Jira
